@@ -5,7 +5,7 @@ var productCategorySchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        unique: true,
+        unique: false,
         index: true,
     },
     isChild: {
