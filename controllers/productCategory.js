@@ -2,18 +2,57 @@ const ProductCategory = require('../models/productCategory');
 const asyncHandle = require('express-async-handler');
 
 const createCategory = asyncHandle(async (req, res) => {
-    const response = await ProductCategory.create(req.body);
-    return res.status(200).json({
-        success: response ? true : false,
-        createdCategory: response ? response : 'Can not create new category!'
-    });
+    const { parentCategory, title } = req.body;
+    if (parentCategory) {
+        const response = await ProductCategory.create({
+            title: title,
+            isChild: true,
+        });
+        if (response) {
+            const parent = await ProductCategory.findById(parentCategory);
+            if (parent) {
+                let listChildren = [...parent.childCategory];
+                listChildren.push(response._id);
+                const responseParent = await ProductCategory.findByIdAndUpdate(parentCategory, { childCategory: listChildren }, { new: true });
+
+                return res.status(200).json({
+                    success: responseParent ? true : false,
+                    message: responseParent ? 'Create Category and Add Category Child' : 'Can not Create Category child',
+                    createdCategory: responseParent ? responseParent : 'Can not create children!'
+                });
+            } else {
+                return res.status(200).json({
+                    success: response ? true : false,
+                    createdCategory: response ? response : 'Can not create new blog category!'
+                });
+            }
+        }
+    } else {
+        const response = await ProductCategory.create({
+            title: title,
+        });
+
+        return res.status(200).json({
+            success: response ? true : false,
+            createdCategory: response ? response : 'Can not create new blog category!'
+        });
+    }
 });
 
 const getListCategory = asyncHandle(async (req, res) => {
-    const response = await ProductCategory.find().select('title _id');
+    const response = await ProductCategory.find().populate('childCategory').select('title _id isChild');
     return res.status(200).json({
         success: response ? true : false,
         productCategories: response ? response : 'Can not get list category!'
+    });
+});
+
+const getDetailCategory = asyncHandle(async (req, res) => {
+    const { pcid } = req.params;
+    const response = await ProductCategory.findById(pcid).populate('childCategory').select('title _id isChild');
+    return res.status(200).json({
+        success: response ? true : false,
+        productCategories: response ? response : 'Can not get detail category!'
     });
 });
 
@@ -24,7 +63,7 @@ const updateCategory = asyncHandle(async (req, res) => {
     return res.status(200).json({
         success: response ? true : false,
         updatedCategory: response ? response : 'Can not update category!'
-    })
+    });
 });
 
 const deleteCategory = asyncHandle(async (req, res) => {
@@ -37,5 +76,5 @@ const deleteCategory = asyncHandle(async (req, res) => {
 });
 
 module.exports = {
-    createCategory, getListCategory, updateCategory, deleteCategory
+    createCategory, getListCategory, updateCategory, deleteCategory, getDetailCategory
 }

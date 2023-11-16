@@ -72,8 +72,8 @@ const getProduct = asyncHandler(async (req, res) => {
     if (!id) {
         throw new Error('Invalid Id Product!!!');
     }
-
-    let response = await Product.findOne({ _id: id });
+    const excludedFields = '-password -cart -wishlist -createdAt -updatedAt -refreshToken';
+    let response = await Product.findOne({ _id: id }).populate('rating.postedBy', excludedFields);
     return res.status(200).json({
         success: response ? true : false,
         message: response ? 'OK' : 'Get Product by ID failed',

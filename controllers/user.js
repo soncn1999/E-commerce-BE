@@ -64,7 +64,7 @@ const login = asyncHandler(async (req, res) => {
             data: {}
         });
     }
-    const response = await User.findOne({ email });
+    const response = await User.findOne({ email, isBlocked: false });
 
     if (response && await response.isCorrectPassword(password)) {
         const { password, role, refreshToken, ...userData } = response.toObject();
@@ -82,7 +82,7 @@ const login = asyncHandler(async (req, res) => {
             accessToken: accessToken,
         });
     } else {
-        throw new Error('Username or Password incorrect!');
+        throw new Error('OOps, You can not access acount, contact Admin to solve it!');
     }
 });
 
@@ -334,9 +334,51 @@ const updateUserCartRemove = asyncHandler(async (req, res) => {
     }
 });
 
+const handleBlockUser = asyncHandler(async (req, res) => {
+    const { uid } = req.params;
+    if (uid) {
+        let response = await User.findByIdAndUpdate(uid, { isBlocked: true }, { new: true });
+        return res.status(200).json({
+            success: response ? true : false,
+            message: response ? response : 'Something went wrong! Can not block this user!'
+        })
+    } else {
+        return res.status(200).json({
+            success: false,
+            message: 'Can not find this user!',
+        });
+    }
+});
+
+const handleRemoveBlockUser = asyncHandler(async (req, res) => {
+    const { uid } = req.params;
+    if (uid) {
+        let response = await User.findByIdAndUpdate(uid, { isBlocked: false }, { new: true });
+        return res.status(200).json({
+            success: response ? true : false,
+            message: response ? response : 'Something went wrong! Can not block this user!'
+        })
+    } else {
+        return res.status(200).json({
+            success: false,
+            message: 'Can not find this user!',
+        });
+    }
+});
+
+const handleGetListBlock = asyncHandler(async (req, res) => {
+    let response = await User.find({ isBlocked: true });
+    return res.status(200).json({
+        success: response ? true : false,
+        message: response ? response : 'Something went wrong! Can not get list block user!'
+    })
+});
+
+
 module.exports = {
     registerUser, login, getCurrentUser, refreshAccessToken,
     logout, forgotPassword, verifyResetToken, getAllUsers,
     deleteUser, updateUser, updateUserByAdmin, updateUserAddress,
-    updateUserCartAdd, updateUserCartRemove, updateUserCartEdit
+    updateUserCartAdd, updateUserCartRemove, updateUserCartEdit,
+    handleBlockUser, handleRemoveBlockUser, handleGetListBlock
 }

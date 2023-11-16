@@ -8,6 +8,13 @@ var blogCategorySchema = new mongoose.Schema({
         unique: true,
         index: true,
     },
+    isChild: {
+        type: Boolean,
+        default: false,
+    },
+    childCategory: [{
+        type: mongoose.Types.ObjectId, ref: 'BlogCategory'
+    }],
 });
 
 //Export the model

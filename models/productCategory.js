@@ -7,9 +7,16 @@ var productCategorySchema = new mongoose.Schema({
         required: true,
         unique: true,
         index: true,
-    }
+    },
+    isChild: {
+        type: Boolean,
+        default: false,
+    },
+    childCategory: [{
+        type: mongoose.Types.ObjectId, ref: 'ProductCategory'
+    }],
 }, {
-    timestamps: true
+    timestamps: true,
 });
 
 //Export the model
