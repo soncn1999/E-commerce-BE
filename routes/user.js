@@ -20,5 +20,6 @@ router.put('/updateuseraddress', verifyAccessToken, ctrls.updateUserAddress);
 router.put('/update-cart-product-add', verifyAccessToken, ctrls.updateUserCartAdd);
 router.put('/update-cart-product-edit', verifyAccessToken, ctrls.updateUserCartEdit);
 router.put('/update-cart-product-remove', verifyAccessToken, ctrls.updateUserCartRemove);
+router.put('/update-cart-product-reset', verifyAccessToken, ctrls.updateCartProductReset);
 
 module.exports = router;

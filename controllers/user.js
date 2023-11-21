@@ -374,11 +374,20 @@ const handleGetListBlock = asyncHandler(async (req, res) => {
     })
 });
 
+const updateCartProductReset = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    let response = await User.findByIdAndUpdate(id, { cart: [] }, { new: true });
+    return res.status(200).json({
+        success: response ? true : false,
+        message: response ? response : 'Something went wrong! Can not reset cart!'
+    })
+});
+
 
 module.exports = {
     registerUser, login, getCurrentUser, refreshAccessToken,
     logout, forgotPassword, verifyResetToken, getAllUsers,
     deleteUser, updateUser, updateUserByAdmin, updateUserAddress,
     updateUserCartAdd, updateUserCartRemove, updateUserCartEdit,
-    handleBlockUser, handleRemoveBlockUser, handleGetListBlock
+    handleBlockUser, handleRemoveBlockUser, handleGetListBlock, updateCartProductReset
 }

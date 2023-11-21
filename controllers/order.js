@@ -5,8 +5,17 @@ const asyncHandler = require('express-async-handler');
 
 const createOrder = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    const { coupon_id } = req.body;
+    const { coupon_id, status, totalItem, isCheckOut } = req.body;
+
     const userCart = await User.findById(id).select('cart').populate('cart.product', 'title price');
+
+    // const userCartCopy = {...userCart};
+    // let userCartTemp = [];
+    // let userCartFilter = userCartCopy?.cart.forEach(item => {
+    //     if (!item.product.isRevoked && item.product.quantity > 0) {
+    //         userCartTemo.push(item);
+    //     }
+    // });
 
     const products = userCart?.cart.map((item) => {
         return {
@@ -25,7 +34,7 @@ const createOrder = asyncHandler(async (req, res) => {
             let coupon = await Coupon.findById(coupon_id);
             if (coupon) {
                 totalPayment = Math.round(totalPayment * (1 - coupon?.discount / 100) / 1000) * 1000;
-                const response = await Order.create({ product: products, total: totalPayment, orderBy: id });
+                const response = await Order.create({ product: products, total: totalPayment, orderBy: id, status: status, totalItem: totalItem, isCheckOut: isCheckOut, coupon: coupon });
                 return res.status(200).json({
                     success: response ? true : false,
                     coupon: coupon ? coupon : 'Something went wrong',
@@ -44,7 +53,7 @@ const createOrder = asyncHandler(async (req, res) => {
             });
         }
     } else {
-        const response = await Order.create({ product: products, total: totalPayment, orderBy: id });
+        const response = await Order.create({ product: products, total: totalPayment, orderBy: id, status: status, totalItem: totalItem, isCheckOut: isCheckOut });
         return res.status(200).json({
             success: response ? true : false,
             totalPayment: totalPayment,
@@ -73,8 +82,21 @@ const getUserOrder = asyncHandler(async (req, res) => {
     });
 });
 
+const getDetailOrder = asyncHandler(async (req, res) => {
+    const { oid } = req.params;
+    const excludedFieldProduct = '-description -rating -totalRatings -createdAt -updatedAt';
+    const excludedFieldUser = '-cart -wishlist -refreshToken -passwordExpires -passwordChangedAt -password -role -createdAt -updatedAt';
+    const response = await Order.findById(oid).populate('product.product', excludedFieldProduct).populate('orderBy', excludedFieldUser);
+    return res.status(200).json({
+        success: response ? true : false,
+        message: response ? response : 'Something went wrong! Try again later'
+    });
+});
+
 const getListOrder = asyncHandler(async (req, res) => {
-    const response = await Order.find();
+    const excludedFieldProduct = '-description -rating -totalRatings -createdAt -updatedAt';
+    const excludedFieldUser = '-cart -wishlist -refreshToken -passwordExpires -passwordChangedAt -password -role -createdAt -updatedAt';
+    const response = await Order.find().populate('product.product', excludedFieldProduct).populate('orderBy', excludedFieldUser);
     return res.status(200).json({
         success: response ? true : false,
         listOrder: response ? response : 'Something went wrong! Try again later'
@@ -83,7 +105,7 @@ const getListOrder = asyncHandler(async (req, res) => {
 
 const removeOrder = asyncHandler(async (req, res) => {
     const { oid } = req.params;
-    console.log(oid);
+
     const response = await Order.findByIdAndDelete(oid);
     return res.status(200).json({
         success: response ? true : false,
@@ -92,5 +114,5 @@ const removeOrder = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-    createOrder, updateStatusOrder, getUserOrder, getListOrder, removeOrder
+    createOrder, updateStatusOrder, getUserOrder, getListOrder, removeOrder, getDetailOrder
 }

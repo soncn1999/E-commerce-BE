@@ -9,8 +9,6 @@ const createProduct = asyncHandler(async (req, res) => {
         throw new Error('No data to create product');
     }
 
-    console.log('check param product >>> ', req.body)
-
     if (req.body && req.body.title) {
         let slug = removeVietnameseTones(req.body.title).toLowerCase();
         req.body.slug = slugify(slug);
@@ -87,11 +85,11 @@ const deleteProduct = asyncHandler(async (req, res) => {
     if (!id) {
         throw new Error('Invalid Product ID, try again!');
     }
-    let response = await Product.findByIdAndDelete(id);
+    let response = await Product.findByIdAndUpdate(id, { isRevoked: true }, { new: true });
     return res.status(200).json({
         success: response ? true : false,
-        message: response ? `Product ${id} deleted successfully` : 'Failed to delete'
-    })
+        message: response ? response : 'Failed to revoke product'
+    });
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
@@ -120,24 +118,28 @@ const ratingsByUser = asyncHandler(async (req, res) => {
 
     if (!star || !pid) throw new Error('Missing inputs!');
 
-    const ratingProduct = await Product.findById(pid);
+    // const ratingProduct = await Product.findById(pid);
 
     // Check people who rated this product
-    const alreadyRating = ratingProduct?.rating?.some(el => el.postedBy == id);
+    // const alreadyRating = ratingProduct?.rating?.some(el => el.postedBy == id);
 
-    if (alreadyRating) {
-        // Update stars and comments
-        await Product.updateOne({
-            rating: { $elemMatch: { alreadyRating } },
-        }, {
-            $set: { "rating.$.star": star, "rating.$.comment": comment }
-        }, { new: true });
-    } else {
-        // Add stars and comments
-        await Product.findByIdAndUpdate(pid, {
-            $push: { rating: { star: star, comment: comment, postedBy: id } }
-        }, { new: true });
-    }
+    // if (alreadyRating) {
+    //     // Update stars and comments
+    //     await Product.updateOne({
+    //         rating: { $elemMatch: { alreadyRating } },
+    //     }, {
+    //         $set: { "rating.$.star": star, "rating.$.comment": comment }
+    //     }, { new: true });
+    // } else {
+    //     // Add stars and comments
+    //     await Product.findByIdAndUpdate(pid, {
+    //         $push: { rating: { star: star, comment: comment, postedBy: id } }
+    //     }, { new: true });
+    // }
+
+    const response = await Product.findByIdAndUpdate(pid, {
+        $push: { rating: { star: star, comment: comment, postedBy: id } }
+    }, { new: true });
 
     //Sum Ratings
     const updatedProduct = await Product.findById(pid);
@@ -146,7 +148,8 @@ const ratingsByUser = asyncHandler(async (req, res) => {
     updatedProduct.totalRatings = Math.round(sumRatings * 10 / ratingCount) / 10;
     await updatedProduct.save();
     return res.status(200).json({
-        success: true
+        success: response ? true : false,
+        data: response ? response : 'Comment was not sended!',
     });
 });
 

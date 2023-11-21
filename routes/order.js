@@ -8,5 +8,6 @@ router.put('/update-status-order/:oid', [verifyAccessToken, isAdmin], ctrls.upda
 router.get('/get-user-order', [verifyAccessToken, isAdmin], ctrls.getUserOrder);
 router.get('/get-list-order', [verifyAccessToken, isAdmin], ctrls.getListOrder);
 router.delete('/remove-order/:oid', [verifyAccessToken, isAdmin], ctrls.removeOrder);
+router.get('/get-detail-order/:oid', [verifyAccessToken], ctrls.getDetailOrder);
 
 module.exports = router;

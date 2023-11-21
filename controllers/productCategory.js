@@ -68,11 +68,28 @@ const updateCategory = asyncHandle(async (req, res) => {
 
 const deleteCategory = asyncHandle(async (req, res) => {
     const { pcid } = req.params;
-    const response = await ProductCategory.findByIdAndDelete(pcid);
-    return res.status(200).json({
-        success: response ? true : false,
-        deletedCategory: response ? response : 'Can not delete category!'
-    })
+
+    const category = await ProductCategory.findById(pcid);
+
+    if (!category.isChild && category.childCategory?.length > 0) {
+        category.childCategory && category.childCategory?.length > 0 && category.childCategory.forEach(async (item) => {
+            let response_relation = await ProductCategory.findByIdAndUpdate(item, { isChild: false }, { new: true });
+        });
+
+        let response = await ProductCategory.findByIdAndDelete(pcid);
+        return res.status(200).json({
+            success: response ? true : false,
+            deletedCategory: response ? response : 'Can not delete category!'
+        });
+    } else {
+        let response = await ProductCategory.findByIdAndDelete(pcid);
+        return res.status(200).json({
+            success: response ? true : false,
+            deletedCategory: response ? response : 'Can not delete category!'
+        });
+    }
+
+
 });
 
 module.exports = {

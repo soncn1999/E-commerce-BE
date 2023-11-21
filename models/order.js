@@ -6,7 +6,7 @@ var orderSchema = new mongoose.Schema({
         {
             product: { type: mongoose.Types.ObjectId, ref: 'Product' },
             count: Number,
-            color: String,
+            color: String
         }
     ],
     status: {
@@ -18,6 +18,10 @@ var orderSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    totalItem: {
+        type: Number,
+        default: 0
+    },
     coupon: {
         type: mongoose.Types.ObjectId,
         ref: 'Coupon'
@@ -26,6 +30,12 @@ var orderSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'User'
     },
+    isCheckOut: {
+        type: Boolean,
+        default: false
+    },
+}, {
+    timestamps: true,
 });
 
 //Export the model
