@@ -65,8 +65,19 @@ const createOrder = asyncHandler(async (req, res) => {
 const updateStatusOrder = asyncHandler(async (req, res) => {
     const { oid } = req.params;
     const { status } = req.body;
-    if (!status) throw new Error('Invalid status!');
+    if (!status) throw new Error('Invalid status order!');
     const response = await Order.findByIdAndUpdate(oid, { status }, { new: true });
+    return res.status(200).json({
+        success: response ? true : false,
+        message: response ? response : 'Something went wrong! Try again later'
+    });
+});
+
+const updatePaymentOrder = asyncHandler(async (req, res) => {
+    const { oid } = req.params;
+    const { isCheckOut } = req.body;
+    if (!isCheckOut) throw new Error('Invalid payment order!');
+    const response = await Order.findByIdAndUpdate(oid, { isCheckOut: isCheckOut }, { new: true });
     return res.status(200).json({
         success: response ? true : false,
         message: response ? response : 'Something went wrong! Try again later'
@@ -96,7 +107,7 @@ const getDetailOrder = asyncHandler(async (req, res) => {
 const getListOrder = asyncHandler(async (req, res) => {
     const excludedFieldProduct = '-description -rating -totalRatings -createdAt -updatedAt';
     const excludedFieldUser = '-cart -wishlist -refreshToken -passwordExpires -passwordChangedAt -password -role -createdAt -updatedAt';
-    const response = await Order.find().populate('product.product', excludedFieldProduct).populate('orderBy', excludedFieldUser);
+    const response = await Order.find().sort({ _id: -1 }).populate('product.product', excludedFieldProduct).populate('orderBy', excludedFieldUser);
     return res.status(200).json({
         success: response ? true : false,
         listOrder: response ? response : 'Something went wrong! Try again later'
@@ -114,5 +125,5 @@ const removeOrder = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-    createOrder, updateStatusOrder, getUserOrder, getListOrder, removeOrder, getDetailOrder
+    createOrder, updateStatusOrder, getUserOrder, getListOrder, removeOrder, getDetailOrder, updatePaymentOrder
 }

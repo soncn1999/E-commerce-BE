@@ -63,6 +63,14 @@ const getAllProduct = asyncHandler(async (req, res) => {
             product: response ? response : 'Can not find Product Results'
         });
     });
+});
+
+const getAllProductForSearch = asyncHandler(async (req, res) => {
+    const response = await Product.find();
+    return res.status(200).json({
+        success: response ? true : false,
+        message: response ? response : 'Failed to get all product'
+    });
 })
 
 const getProduct = asyncHandler(async (req, res) => {
@@ -170,5 +178,5 @@ const uploadImagesProduct = asyncHandler(async (req, res) => {
 
 module.exports = {
     createProduct, getProduct, getAllProduct,
-    deleteProduct, updateProduct, ratingsByUser, uploadImagesProduct
+    deleteProduct, updateProduct, ratingsByUser, uploadImagesProduct, getAllProductForSearch
 }

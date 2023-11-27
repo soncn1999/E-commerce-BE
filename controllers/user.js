@@ -272,9 +272,10 @@ const updateUserCartEdit = asyncHandler(async (req, res) => {
     const { id } = req.user;
     const { _id, product, quantity, color } = req.body;
 
-    if (!_id && !product || !quantity || !color) throw new Error('Invalid Input Parameter');
+    if (!_id || !quantity || !color) throw new Error('Invalid Input Parameter');
 
     const user = await User.findById(id).select('cart');
+
     const alreadyProduct = user?.cart?.find((item) => {
         return item._id.toString() == _id
     });
@@ -288,6 +289,11 @@ const updateUserCartEdit = asyncHandler(async (req, res) => {
                 return;
             }
         });
+
+        if (!product) {
+            req.body.product = newCart[cartIndex].product;
+        }
+
         newCart.splice(cartIndex, 1, req.body);
         let response = await User.findByIdAndUpdate(id, { cart: newCart }, { new: true });
         return res.status(200).json({

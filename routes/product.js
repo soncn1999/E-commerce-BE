@@ -6,6 +6,7 @@ const uploadCloud = require('../config/cloudinary.config');
 router.post('/createnewproduct', [verifyAccessToken, isAdmin], ctrls.createProduct);
 router.get('/getproduct', ctrls.getProduct);
 router.get('/getallproduct', ctrls.getAllProduct);
+router.get('/getallproductforsearch', ctrls.getAllProductForSearch);
 router.put('/deleteproduct', [verifyAccessToken, isAdmin], ctrls.deleteProduct);
 router.put('/updateproduct', [verifyAccessToken, isAdmin], ctrls.updateProduct);
 router.put('/rating', verifyAccessToken, ctrls.ratingsByUser);
